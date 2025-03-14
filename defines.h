@@ -1,0 +1,9 @@
+#define SDL_MAIN_USE_CALLBACKS 1
+
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
+
+#define SPEED 180
+
+#define FPS 60
+#define FRAME_TARGET_TIME (1000 / FPS)
