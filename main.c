@@ -9,11 +9,12 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
 int pos[2] = {500, 500};
+int moveDir[2] = {0, 0};
 float direction = 107.0f;
 float direction2 = 67.0f;
 float direction3 = 0.0f;
 
-float velocity = 0.0f;
+int accelerating = 0;
 
 const bool *keyboard_state = NULL;
 
@@ -63,7 +64,7 @@ void Draw() {
     renderLine(pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
 
 
-    if (velocity >= 0.9) {
+    if (accelerating == 1) {
         float flameOffsetX = 3;
         float flameOffsetY = 53;
         float flameAngleRad = getRadius(direction3);
@@ -93,8 +94,20 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     keyboard_state = SDL_GetKeyboardState(NULL);
 
+    accelerating = 0;
+
     if (keyboard_state[SDL_SCANCODE_W] || keyboard_state[SDL_SCANCODE_UP]) {        
-        velocity = 1.0f;
+        float radius = getRadius(direction);
+        float radius2 = getRadius(direction2);
+        float radius3 = getRadius(direction3);
+
+        float offsetX = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
+        float offsetY = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
+
+        moveDir[0] += (SPEED * offsetX * 0.06);
+        moveDir[1] += (SPEED * offsetY * 0.06);
+
+        accelerating = 1;
     }
 
     if (keyboard_state[SDL_SCANCODE_D] || keyboard_state[SDL_SCANCODE_RIGHT]) {
@@ -109,19 +122,14 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         direction3 -= 3;
     }
 
-    if (velocity != 0)
-    {
-        float radius = getRadius(direction);
-        float radius2 = getRadius(direction2);
-        float radius3 = getRadius(direction3);
+    if (moveDir[0] != 0 || moveDir[1] != 0) {
+        pos[0] += moveDir[0] * delta_time * -1;
+        pos[1] += moveDir[1] * delta_time * -1;
 
-        float offsetX = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
-        float offsetY = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
-
-        pos[0] -= (SPEED * delta_time) * offsetX * velocity;
-        pos[1] -= (SPEED * delta_time) * offsetY * velocity;
-
-        if (velocity > 0.25) velocity *= 0.99f;
+        if (moveDir[0] > 100 || moveDir[0] < -100 || moveDir[1] > 100 || moveDir[1] < -100) {
+            moveDir[0] *= 0.96;
+            moveDir[1] *= 0.96;
+        }
     }
 
     if (pos[0] > WINDOW_WIDTH) {
