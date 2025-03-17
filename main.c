@@ -1,6 +1,8 @@
 #include "defines.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 
 int last_frame_time = 0;
@@ -15,6 +17,12 @@ float direction2 = 67.0f;
 float direction3 = 0.0f;
 
 int accelerating = 0;
+
+int numBullets = 0;
+
+float *bullets;
+
+int canShoot = 0;
 
 const bool *keyboard_state = NULL;
 
@@ -37,6 +45,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
         SDL_Log("Failed creating window and renderer %s \n", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    bullets = (float *)malloc(sizeof(float) * 4);
+
     return SDL_APP_CONTINUE;
 }
 
@@ -53,6 +64,14 @@ void Draw() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    for (int i = 0; i < numBullets; i++) {
+        SDL_FRect bullet = {bullets[i * 4], bullets[i * 4 + 1], 5, 5};
+        SDL_RenderRect(renderer, &bullet);
+
+        bullets[i * 4] += bullets[i*4 + 2];
+        bullets[i * 4 + 1] += bullets[i*4 + 3];
+    }
 
     renderLine(pos[0], pos[1], 50, direction);
     renderLine(pos[0], pos[1], 50, direction2);
@@ -94,6 +113,27 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     keyboard_state = SDL_GetKeyboardState(NULL);
 
+    if (keyboard_state[SDL_SCANCODE_SPACE] && canShoot == 0)
+    {
+        float radius = getRadius(direction);
+        float radius2 = getRadius(direction2);
+        float radius3 = getRadius(direction3);
+
+        float offsetX = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
+        float offsetY = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
+
+        bullets = (float *)realloc(bullets, sizeof(float) * (numBullets + 1) * 4);
+        bullets[numBullets * 4] = pos[0];
+        bullets[numBullets * 4 + 1] = pos[1];
+        bullets[numBullets * 4 + 2] = offsetX * -1 * 5;
+        bullets[numBullets * 4 + 3] = offsetY * -1 * 5;
+
+        numBullets += 1;
+        canShoot = 20;
+    }
+
+    if (canShoot > 0) canShoot -= 1;
+
     accelerating = 0;
 
     if (keyboard_state[SDL_SCANCODE_W] || keyboard_state[SDL_SCANCODE_UP]) {        
@@ -104,8 +144,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         float offsetX = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
         float offsetY = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
 
-        moveDir[0] += (SPEED * offsetX * 0.06);
-        moveDir[1] += (SPEED * offsetY * 0.06);
+        moveDir[0] += (SPEED * offsetX * 0.04);
+        moveDir[1] += (SPEED * offsetY * 0.04);
 
         accelerating = 1;
     }
@@ -126,9 +166,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         pos[0] += moveDir[0] * delta_time * -1;
         pos[1] += moveDir[1] * delta_time * -1;
 
-        if (moveDir[0] > 100 || moveDir[0] < -100 || moveDir[1] > 100 || moveDir[1] < -100) {
-            moveDir[0] *= 0.96;
-            moveDir[1] *= 0.96;
+        if (moveDir[0] > 150 || moveDir[0] < -150 || moveDir[1] > 150 || moveDir[1] < -150) {
+            moveDir[0] *= 0.98;
+            moveDir[1] *= 0.98;
         }
     }
 
@@ -155,4 +195,5 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
+    free(bullets);
 }
