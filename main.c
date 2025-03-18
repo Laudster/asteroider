@@ -56,6 +56,33 @@ void renderLine(int posX, int posY, int length, float angle)
     SDL_RenderLine(renderer, posX, posY, (int)endX, (int)endY);
 }
 
+void drawAsteroid(SDL_Renderer *renderer, int centerX, int centerY, int radius, int numPoints) {
+    // Calculate angle increment
+    float angleIncrement = 360.0f / numPoints;
+
+    // Array to store vertices
+    int x[numPoints], y[numPoints];
+
+    // Calculate vertices with deterministic variation in radius
+    for (int i = 0; i < numPoints; i++) {
+        float angle = i * angleIncrement;
+        float angleRad = angle * M_PI / 180.0f;
+
+        // Deterministic variation using a sawtooth wave
+        float variation = fmodf(angle / 150.0f, 1.0f); //Creates repeating segments
+        float r = radius + radius * variation;
+
+        x[i] = centerX + (int)(r * cosf(angleRad));
+        y[i] = centerY + (int)(r * sinf(angleRad));
+    }
+
+    // Draw lines connecting the vertices
+    for (int i = 0; i < numPoints; i++) {
+        int nextIndex = (i + 1) % numPoints; // Wrap around to connect the last and first points
+        SDL_RenderLine(renderer, x[i], y[i], x[nextIndex], y[nextIndex]);
+    }
+}
+
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     if (!SDL_CreateWindowAndRenderer("Asteroider", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_BORDERLESS, &window, &renderer)) {
@@ -69,7 +96,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 }
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
-    if (event->type == SDL_EVENT_KEY_DOWN) {
+    if (event->type == SDL_EVENT_QUIT) {
+        return SDL_APP_SUCCESS;
+    } else if (event->type == SDL_EVENT_KEY_DOWN) {
         if (event->key.scancode == SDL_SCANCODE_Q || event->key.scancode == SDL_SCANCODE_ESCAPE) {
             return SDL_APP_SUCCESS;
         }
@@ -98,7 +127,6 @@ void Draw() {
     float rotatedOffset3Y = -11 * sinf(radius3) + 35 * cosf(radius3);
   
     renderLine(pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
-
 
     if (accelerating == 1) {
         float flameOffsetX = 3;
