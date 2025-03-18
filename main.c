@@ -24,11 +24,27 @@ float *bullets;
 
 int canShoot = 0;
 
+int counter = 0;
+
 const bool *keyboard_state = NULL;
 
 float getRadius(float angle)
 {
     return angle * 3.14 / 180.0f;
+}
+
+float* calculateCharacterDirection()
+{
+    static float result[2];
+
+    float radius = getRadius(direction);
+    float radius2 = getRadius(direction2);
+    float radius3 = getRadius(direction3);
+
+    result[0] = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
+    result[1] = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
+
+    return result;
 }
 
 void renderLine(int posX, int posY, int length, float angle)
@@ -39,6 +55,7 @@ void renderLine(int posX, int posY, int length, float angle)
 
     SDL_RenderLine(renderer, posX, posY, (int)endX, (int)endY);
 }
+
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     if (!SDL_CreateWindowAndRenderer("Asteroider", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_BORDERLESS, &window, &renderer)) {
@@ -111,25 +128,47 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;
     last_frame_time = SDL_GetTicks();
 
+    counter++;
+
     keyboard_state = SDL_GetKeyboardState(NULL);
 
     if (keyboard_state[SDL_SCANCODE_SPACE] && canShoot == 0)
     {
-        float radius = getRadius(direction);
-        float radius2 = getRadius(direction2);
-        float radius3 = getRadius(direction3);
-
-        float offsetX = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
-        float offsetY = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
+        float *characterDirection = calculateCharacterDirection();
 
         bullets = (float *)realloc(bullets, sizeof(float) * (numBullets + 1) * 4);
         bullets[numBullets * 4] = pos[0];
         bullets[numBullets * 4 + 1] = pos[1];
-        bullets[numBullets * 4 + 2] = offsetX * -1 * 5;
-        bullets[numBullets * 4 + 3] = offsetY * -1 * 5;
+        bullets[numBullets * 4 + 2] = characterDirection[0] * -1 * 5;
+        bullets[numBullets * 4 + 3] = characterDirection[1] * -1 * 5;
 
         numBullets += 1;
         canShoot = 20;
+    }
+
+    if (counter == 300){
+        counter = 0;
+
+        int newNumBullets = 0;
+        float *newBullets = NULL;
+
+        for (int i = 0; i < numBullets; i++) {
+            if (bullets[i * 4] < WINDOW_WIDTH + 20 && bullets[i * 4] > -20 && bullets[i * 4 + 1] < WINDOW_HEIGHT + 20 && bullets[i * 4 +1] > -20) {
+                newBullets = (float *)realloc(newBullets, sizeof(float) * (newNumBullets + 1) * 4);
+
+                newBullets[newNumBullets * 4] = bullets[i * 4];
+                newBullets[newNumBullets * 4 + 1] = bullets[i * 4 + 1];
+                newBullets[newNumBullets * 4 + 2] = bullets[i * 4 + 2];
+                newBullets[newNumBullets * 4 + 3] = bullets[i * 4 + 3];
+
+                newNumBullets += 1;
+            }
+        }
+
+        free(bullets);
+
+        bullets = newBullets;
+        numBullets = newNumBullets;
     }
 
     if (canShoot > 0) canShoot -= 1;
@@ -137,15 +176,10 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     accelerating = 0;
 
     if (keyboard_state[SDL_SCANCODE_W] || keyboard_state[SDL_SCANCODE_UP]) {        
-        float radius = getRadius(direction);
-        float radius2 = getRadius(direction2);
-        float radius3 = getRadius(direction3);
+        float *characterDirection = calculateCharacterDirection();
 
-        float offsetX = (cosf(radius) + cosf(radius2) + cosf(radius3) / 3.0f);
-        float offsetY = (sinf(radius) + sinf(radius2) + sinf(radius3) / 3.0f);
-
-        moveDir[0] += (SPEED * offsetX * 0.04);
-        moveDir[1] += (SPEED * offsetY * 0.04);
+        moveDir[0] += (SPEED * characterDirection[0] * 0.04);
+        moveDir[1] += (SPEED * characterDirection[1] * 0.04);
 
         accelerating = 1;
     }
