@@ -58,6 +58,29 @@ void drawAsteroid(SDL_Renderer *renderer, int centerX, int centerY, int radius, 
     }
 }
 
+void drawAlienShip(SDL_Renderer *renderer, int x, int y, float size) {
+    SDL_RenderLine(renderer, x, y, x + (45 * size), y);
+  
+    SDL_RenderLine(renderer, x + (45 * size), y, x + (63 * size), y - (22 * size));
+    SDL_RenderLine(
+        renderer, x + (63 * size), y - (22 * size), x + (41 * size), y - (41 * size));
+    SDL_RenderLine(
+        renderer, x + (41 * size), y - (41 * size), x + (36 * size), y - (54 * size));
+  
+    SDL_RenderLine(renderer, x + (36 * size), y - (54 * size), x + (9 * size), y - (54 * size));
+  
+    SDL_RenderLine(renderer, x + (9 * size), y - (54 * size), x + (4 * size), y - (41 * size));
+    SDL_RenderLine(
+        renderer, x + (4 * size), y - (41 * size), x - (18 * size), y - (22 * size));
+    SDL_RenderLine(renderer, x - (18 * size), y - (22 * size), x, y);
+  
+    SDL_RenderLine(
+        renderer, x + (63 * size), y - (22 * size), x - (18 * size), y - (22 * size));
+    SDL_RenderLine(
+        renderer, x + (41 * size), y - (41 * size), x + (4 * size), y - (41 * size));
+  }
+  
+  
 float distancePointToLineSegment(int lineX1, int lineY1, int lineX2, int lineY2, int pointX, int pointY) {
     float dx = lineX2 - lineX1;
     float dy = lineY2 - lineY1;
@@ -131,11 +154,11 @@ bool checkPlayerCircleCollision(int playerPos[2], float playerDirection1, float 
     dist3 < radius);
 }
 
-bool checkBulletCollision(int asteroidX, int asteroidY, int radius, float bulletX, float bulletY) {
+bool checkBulletCollision(int asteroidX, int asteroidY, int radius, float bulletX, float bulletY, float bulletRadius) {
     int dx = asteroidX - bulletX;
     int dy = asteroidY - bulletY;
     int distanceSquared = dx * dx + dy * dy;
-    int radiiSum = radius + 5;
+    int radiiSum = radius + bulletRadius;
 
     return distanceSquared <= radiiSum * radiiSum;
 }
