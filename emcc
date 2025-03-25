@@ -1,0 +1,1 @@
+emcc main.c -o web/index.html `  -I 'C:/SDL/include' `  -L 'C:/SDL/web-build' `  'C:/SDL/web-build/libSDL3.a' `  `  -s USE_SDL=3 `  -s WASM=1	

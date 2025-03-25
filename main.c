@@ -229,6 +229,8 @@ void Draw() {
         renderLine(renderer, flameBaseX, flameBaseY, 12, direction3 + 290);
     }
 
+    draw_text(renderer, "epic win", 20, 20, 1);
+
     SDL_RenderPresent(renderer);
 }
 

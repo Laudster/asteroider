@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include "font.h"
 
 float getRadius(float angle)
 {
@@ -161,4 +162,51 @@ bool checkBulletCollision(int asteroidX, int asteroidY, int radius, float bullet
     int radiiSum = radius + bulletRadius;
 
     return distanceSquared <= radiiSum * radiiSum;
+}
+
+static SDL_Texture *fontTexture;
+
+SDL_Texture* loadFont(SDL_Renderer *renderer){
+    SDL_Surface *surface = SDL_CreateSurface(FONTWIDTH, FONTHEIGHT,
+        SDL_GetPixelFormatForMasks(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000));
+
+    Uint32 white = SDL_MapSurfaceRGB(surface, 255, 255, 255);
+    Uint32 black = SDL_MapSurfaceRGB(surface, 0, 0, 0);
+
+    for (int y = 0; y < FONTHEIGHT; y++) {
+        for (int x = 0; x < FONTWIDTH; x++) {
+            Uint32 color = font[y][x] ? white : black;
+            ((Uint32 *)surface->pixels)[y * FONTWIDTH + x] = color;
+        }
+    }
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+    SDL_DestroySurface(surface);
+
+    return texture;
+}
+
+void draw_char(SDL_Renderer *renderer, unsigned char character, int cx, int cy, int scale) {
+    if (fontTexture == NULL) {
+        fontTexture = loadFont(renderer);
+    }
+
+    SDL_Point cell = {
+        (character-32) % (FONTWIDTH / GLYPHWIDTH),
+        (character-32) / (FONTWIDTH / GLYPHWIDTH)
+    };
+
+    SDL_FRect srcRect = {cell.x * GLYPHWIDTH, cell.y * GLYPHHEIGHT, GLYPHWIDTH, GLYPHHEIGHT};
+
+    SDL_FRect destRect = {cx, cy, GLYPHWIDTH * scale, GLYPHHEIGHT * scale};
+
+    SDL_RenderTexture(renderer, fontTexture, &srcRect, &destRect);
+}
+
+void draw_text(SDL_Renderer *renderer, const char *text, int x, int y, int scale)
+{
+    for (size_t i = 0; text[i] != '\0'; i++) {
+        draw_char(renderer, text[i], x + i * GLYPHWIDTH * scale, y, scale);
+    }
 }
