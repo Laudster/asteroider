@@ -3,7 +3,31 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Emscripten-Generated Code</title>
+    <meta name="description" content="Spill det klassiske spillet Asteroider rett i nettleseren.">
+    <meta name="keywords" content="Asteroids, asteroider, spill, nettspill, klassiske spill, webspill, gratis spill">
+    <meta name="author" content="Amund">
+    <meta name="robots" content="index">
+
+    <script type="application/ld+json">
+    {
+  	"@context": "https://schema.org",
+  	"@type": "VideoGame",
+  	"name": "Asteroider",
+  	"url": "https://asteroider.no",
+  	"description": "Spill Asteroids direkte i nettleseren din og konkurrer om highscore!",
+  	"author": {
+    	  "@type": "Person",
+    	  "name": "Amund"
+  	},
+  	"genre": "Arcade",
+  	"operatingSystem": "Web",
+  	"applicationCategory": "Game",
+	"gamePlatform": "Web Browser"
+    }
+    </script>
+
+    <link rel="icon" type="image/x-icon" href="favicon.png">
+    <title> Asteroider </title>
     <style>body {
   font-family: arial;
   margin: 0;
@@ -12,7 +36,6 @@
 
 .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
 div.emscripten { text-align: center; }
-div.emscripten_border { border: 1px solid black; }
 /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
 canvas.emscripten { border: 0px none; background-color: black; }
 
@@ -124,6 +147,10 @@ canvas.emscripten { border: 0px none; background-color: black; }
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
     <textarea id="output" rows="8"></textarea>
+
+    <div id="download">
+      <a href="/asteroider.exe" download> Last ned for Windows </a>
+    </div>
 
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');

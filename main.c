@@ -43,6 +43,21 @@ float delta_time;
 const bool *keyboard_state = NULL;
 
 void die() {
+    free(bullets);
+    free(asteroids);
+    free(aliens);
+    free(alienBullets);
+
+    numBullets = 0;
+    numAsteroids = 0;
+    numAliens = 0;
+    numAlienBullets = 0;
+
+    bullets = (float *)malloc(sizeof(float) * 4);
+    asteroids = (int *)malloc(sizeof(int) * 5);
+    aliens = (int *)malloc(sizeof(int) * 6);
+    alienBullets = (float *)malloc(sizeof(float) * 4);
+
     pos[0] = WINDOW_WIDTH / 2;
     pos[1] = WINDOW_HEIGHT / 2;
     moveDir[0] = 0;
