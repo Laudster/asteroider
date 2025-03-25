@@ -20,6 +20,8 @@ float direction3 = 0.0f;
 
 int accelerating = 0;
 
+int score = 0;
+
 int numBullets = 0;
 float *bullets;
 
@@ -48,6 +50,7 @@ void die() {
     direction = 107.0f;
     direction2 = 67.0f;
     direction3 = 0.0f;
+    score = 0;
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
@@ -86,13 +89,15 @@ void Draw() {
 
         for (int a = 0; a < numAsteroids; a++) {
             if (checkBulletCollision(asteroids[a * 5], asteroids[a * 5 + 1], asteroids[a * 5 + 4], bullets[i * 4], bullets[i * 4 + 1], 5)) {
-                bullets[i * 4] = 99999;
+                bullets[i * 4] = 1999;
 
                 asteroids[a * 5 + 4] *= 0.6;
 
                 if (asteroids[a * 5 + 4] <= 10) {
                     asteroids[a * 5] = 9999;
                 }
+
+                score += 30;
             }
         }
 
@@ -128,6 +133,8 @@ void Draw() {
             if (checkBulletCollision(bullets[b * 4], bullets[b * 4 + 1], 5, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] * 4)) {
                 aliens[i * 6] = 99999;
                 bullets[b * 4] = -999;
+
+                score += 50;
             }
         }
 
@@ -229,7 +236,10 @@ void Draw() {
         renderLine(renderer, flameBaseX, flameBaseY, 12, direction3 + 290);
     }
 
-    draw_text(renderer, "epic win", 20, 20, 1);
+    char scoreText[10];
+    sprintf(scoreText, "%d", score);
+
+    draw_text(renderer, scoreText, 10, 10, 5);
 
     SDL_RenderPresent(renderer);
 }
