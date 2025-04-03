@@ -20,6 +20,10 @@ float direction3 = 0.0f;
 
 int accelerating = 0;
 
+int dead = 0;
+
+static Line deadLines[3];
+
 int score = 0;
 
 int numBullets = 0;
@@ -43,20 +47,15 @@ float delta_time;
 const bool *keyboard_state = NULL;
 
 void die() {
-    free(bullets);
-    free(asteroids);
-    free(aliens);
-    free(alienBullets);
+    dead = 200;
 
-    numBullets = 0;
-    numAsteroids = 0;
-    numAliens = 0;
-    numAlienBullets = 0;
-
-    bullets = (float *)malloc(sizeof(float) * 4);
-    asteroids = (int *)malloc(sizeof(int) * 5);
-    aliens = (int *)malloc(sizeof(int) * 6);
-    alienBullets = (float *)malloc(sizeof(float) * 4);
+    for (int i = 0; i < 3; i++) {
+        deadLines[i].x = pos[0] / 1.0f;
+        deadLines[i].y = pos[1] / 1.0f;
+        deadLines[i].angle = rand() % (360 - 0 + 1) + 0;
+        deadLines[i].velX = cosf(deadLines[i].angle) * 20;
+        deadLines[i].velY = sinf(deadLines[i].angle) * 0;
+    }
 
     pos[0] = WINDOW_WIDTH / 2;
     pos[1] = WINDOW_HEIGHT / 2;
@@ -126,7 +125,7 @@ void Draw() {
         asteroids[i * 5] += asteroids[i * 5  + 2] * delta_time * 50;
         asteroids[i * 5 + 1] += asteroids[i * 5 + 3] * delta_time * 50;
 
-        if (checkPlayerCircleCollision(pos, direction, direction2, direction3, asteroids[i * 5], asteroids[i * 5 + 1], asteroids[i * 5 + 4])) {
+        if (checkPlayerCircleCollision(pos, direction, direction2, direction3, asteroids[i * 5], asteroids[i * 5 + 1], asteroids[i * 5 + 4]) && dead == 0) {
             die();
         }
     }
@@ -134,7 +133,7 @@ void Draw() {
     for (int i = 0; i < numAliens; i++) {
         drawAlienShip(renderer, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] / 10);
 
-        if (checkPlayerCircleCollision(pos, direction, direction2, direction3, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] * 4)) {
+        if (checkPlayerCircleCollision(pos, direction, direction2, direction3, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] * 4) && dead == 0) {
             die();
         }
 
@@ -206,7 +205,7 @@ void Draw() {
         SDL_FRect alienBullet = {alienBullets[i * 4], alienBullets[i *  4 + 1], 5,  5};
         SDL_RenderRect(renderer, &alienBullet);
 
-        if (checkPlayerCircleCollision(pos, direction, direction2, direction3, alienBullets[i * 4], alienBullets[i * 4 + 1], 5)) {
+        if (checkPlayerCircleCollision(pos, direction, direction2, direction3, alienBullets[i * 4], alienBullets[i * 4 + 1], 5) && dead == 0) {
             die();
             alienBullets[i * 4] = 2300;
         }
@@ -227,14 +226,24 @@ void Draw() {
         alienBullets[i * 4 + 1] += 500 * alienBullets[i * 4 + 3] * delta_time;
     }
 
-    renderLine(renderer, pos[0], pos[1], 50, direction);
-    renderLine(renderer, pos[0], pos[1], 50, direction2);
-
     float radius3 = getRadius(direction3);
     float rotatedOffset3X = -11 * cosf(radius3) - 35 * sinf(radius3);
     float rotatedOffset3Y = -11 * sinf(radius3) + 35 * cosf(radius3);
-  
-    renderLine(renderer, pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
+
+    if (dead == 0) {
+        renderLine(renderer, pos[0], pos[1], 50, direction);
+        renderLine(renderer, pos[0], pos[1], 50, direction2);
+        renderLine(renderer, pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
+    } else {
+        for (int i = 0; i < 3; i++) {
+            renderLine(renderer, deadLines[i].x, deadLines[i].y, 50, deadLines[i].angle);
+
+            deadLines[i].x += deadLines[i].velX / 60.0f;
+            deadLines[i].y += deadLines[i].velY / 60.0f;
+        }
+
+        dead -= 1;
+    }
 
     if (accelerating == 1) {
         float flameOffsetX = 3;
@@ -273,7 +282,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     keyboard_state = SDL_GetKeyboardState(NULL);
 
-    if (keyboard_state[SDL_SCANCODE_SPACE] && canShoot == 0)
+    if (keyboard_state[SDL_SCANCODE_SPACE] && canShoot == 0  && dead == 0)
     {
         float *characterDirection = calculateCharacterDirection(direction, direction2, direction3);
 
@@ -455,7 +464,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     accelerating = 0;
 
-    if (keyboard_state[SDL_SCANCODE_W] || keyboard_state[SDL_SCANCODE_UP]) {        
+    if (keyboard_state[SDL_SCANCODE_W] && dead == 0 || keyboard_state[SDL_SCANCODE_UP] && dead == 0) {        
         float *characterDirection = calculateCharacterDirection(direction, direction2, direction3);
 
         moveDir[0] += (SPEED * characterDirection[0] * 0.04);
@@ -464,13 +473,13 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         accelerating = 1;
     }
 
-    if (keyboard_state[SDL_SCANCODE_D] || keyboard_state[SDL_SCANCODE_RIGHT]) {
+    if (keyboard_state[SDL_SCANCODE_D] && dead == 0 || keyboard_state[SDL_SCANCODE_RIGHT] && dead == 0) {
         direction += 3;
         direction2 += 3;
         direction3 += 3;
     }
 
-    if (keyboard_state[SDL_SCANCODE_A] || keyboard_state[SDL_SCANCODE_LEFT]) {
+    if (keyboard_state[SDL_SCANCODE_A] && dead == 0 || keyboard_state[SDL_SCANCODE_LEFT] && dead == 0) {
         direction -= 3;
         direction2 -= 3;
         direction3 -= 3;

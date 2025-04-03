@@ -4,6 +4,10 @@
 #include <math.h>
 #include "font.h"
 
+typedef struct {
+    float x, y, angle, velX, velY;
+} Line;
+
 float getRadius(float angle)
 {
     return angle * 3.14 / 180.0f;
