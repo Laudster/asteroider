@@ -236,7 +236,7 @@ void Draw() {
         renderLine(renderer, pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
     } else {
         for (int i = 0; i < 3; i++) {
-            renderLine(renderer, deadLines[i].x, deadLines[i].y, 50, deadLines[i].angle);
+            renderLine(renderer, deadLines[i].x, deadLines[i].y, 30, deadLines[i].angle);
 
             deadLines[i].x += deadLines[i].velX / 60.0f;
             deadLines[i].y += deadLines[i].velY / 60.0f;
