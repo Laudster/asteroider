@@ -28,7 +28,10 @@ int score = 0;
 
 int stage = 0;
 
-static SDL_Texture *fontTexture;
+int buttonDown = 1;
+
+static SDL_Texture *blackText;
+static SDL_Texture *whiteText;
 
 int numBullets = 0;
 float *bullets;
@@ -81,7 +84,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    fontTexture = loadFont(renderer, 1);
+    blackText = loadFont(renderer, 1);
+    whiteText = loadFont(renderer, 0);
 
     bullets = (float *)malloc(sizeof(float) * 4);
     asteroids = (int *)malloc(sizeof(int) * 5);
@@ -93,6 +97,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+    {
+        buttonDown = 0;
+    } else buttonDown = 1;
+
     if (event->type == SDL_EVENT_QUIT)
     {
         return SDL_APP_SUCCESS;
@@ -108,7 +117,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             else
             {
                 stage = 0;
-                fontTexture = loadFont(renderer, 1);
             }
         }
 
@@ -128,25 +136,31 @@ void Draw()
 
     if (stage == 2)
     {
-        draw_text(renderer, "Dette spillet er laget av vågen vgs elev Amund Laudal Breivik.", 800, 200, 5, fontTexture);
+        draw_text(renderer, "Dette spillet er laget av Vagen vgs elev", 100, 200, 3, whiteText);
+        draw_text(renderer, "Amund Laudal Breivik. Spillet ble laget med SDL3", 100, 240, 3, whiteText);
+        draw_text(renderer, "og kompilert til webassembly med Emcc.", 100, 280, 3, whiteText);
+        draw_text(renderer, "Kildekoden for spillet kan du finner her:", 100, 320, 3, whiteText);
+        draw_text(renderer, "https://github.com/laudster/asteroider", 100, 400, 3, whiteText);
+
 
         SDL_FRect tilbakeRect = {50, 700, 300, 80};
-        draw_text(renderer, "Tilbake", 50, 705, 6, fontTexture);
+        SDL_RenderFillRect(renderer, &tilbakeRect);
+        draw_text(renderer, "Tilbake", 70, 705, 6, blackText);
     }
 
     if (stage == 0)
-    {
+    {   
         SDL_FRect spillRect = {400, 200, 300, 80};
         SDL_RenderFillRect(renderer, &spillRect);
-        draw_text(renderer, "Spill", 450, 205, 6, fontTexture);
+        draw_text(renderer, "Spill", 450, 205, 6, blackText);
 
         SDL_FRect infoRect = {400, 400, 300, 80};
         SDL_RenderFillRect(renderer, &infoRect);
-        draw_text(renderer, "Info", 450, 405, 6, fontTexture);
+        draw_text(renderer, "Info", 450, 405, 6, blackText);
 
         SDL_FRect sluttRect = {400, 600, 300, 80};
         SDL_RenderFillRect(renderer, &sluttRect);
-        draw_text(renderer, "Slutt", 450, 605, 6, fontTexture);
+        draw_text(renderer, "Slutt", 450, 605, 6, blackText);
     }
 
     if (stage == 1)
@@ -353,7 +367,7 @@ void Draw()
         char scoreText[10];
         sprintf(scoreText, "%d", score);
 
-        draw_text(renderer, scoreText, 10, 10, 5, fontTexture);
+        draw_text(renderer, scoreText, 10, 10, 5, whiteText);
     }
 
     SDL_RenderPresent(renderer);
@@ -373,11 +387,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (stage == 0)
     {
-        SDL_Event event;
 
-        SDL_PollEvent(&event);
-
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+        if (buttonDown == 0)
         {
             float x, y;
             SDL_GetMouseState(&x, &y);
@@ -387,7 +398,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                 if (y >= 200.0f && y <= 280.0f)
                 {
                     stage = 1;
-                    fontTexture = loadFont(renderer, 0);
                 }
 
                 if (y >= 400.0f && y <= 480.0f)
@@ -397,11 +407,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
                 if (y >= 600.0f && y <= 680.0f)
                 {
-                    free(bullets);
-                    free(asteroids);
-                    free(aliens);
-                    free(alienBullets);
-                    SDL_AppQuit(appstate, SDL_APP_SUCCESS);
+                    return SDL_APP_SUCCESS;
                 }
             }
         }
@@ -409,16 +415,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (stage == 2)
     {
-        SDL_Event event;
-
-        SDL_PollEvent(&event);
-
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+        if (buttonDown == 0)
         {
             float x, y;
             SDL_GetMouseState(&x, &y);
 
-            if (x >= 50.0f && x <= 250.0f && y >= 700.0f && y <= 780.0f)
+            if (x >= 50.0f && x <= 350.0f && y >= 700.0f && y <= 780.0f)
             {
                 stage = 0;
             }
