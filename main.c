@@ -108,16 +108,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
     else if (event->type == SDL_EVENT_KEY_DOWN)
     {
-        if (event->key.scancode == SDL_SCANCODE_ESCAPE && stage == 1)
+        if (event->key.scancode == SDL_SCANCODE_ESCAPE && stage == 2)
         {
-            if (stage == 0)
-            {
-                stage = 1;
-            }
-            else
-            {
-                stage = 0;
-            }
+            stage = 0;
         }
 
         if (event->key.scancode == SDL_SCANCODE_Q)
@@ -134,7 +127,24 @@ void Draw()
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-    if (stage == 2)
+    if (stage == 0)
+    {
+        draw_text(renderer, "Asteroider!", 300, 50, 8, whiteText);
+        
+        SDL_FRect spillRect = {400, 250, 300, 80};
+        SDL_RenderFillRect(renderer, &spillRect);
+        draw_text(renderer, "Spill", 450, 255, 6, blackText);
+
+        SDL_FRect infoRect = {400, 450, 300, 80};
+        SDL_RenderFillRect(renderer, &infoRect);
+        draw_text(renderer, "Info", 450, 455, 6, blackText);
+
+        SDL_FRect sluttRect = {400, 650, 300, 80};
+        SDL_RenderFillRect(renderer, &sluttRect);
+        draw_text(renderer, "Slutt", 450, 655, 6, blackText);
+    }
+
+    if (stage == 1)
     {
         draw_text(renderer, "Dette spillet er laget av Vagen vgs elev", 100, 200, 3, whiteText);
         draw_text(renderer, "Amund Laudal Breivik. Spillet ble laget med SDL3", 100, 240, 3, whiteText);
@@ -148,22 +158,7 @@ void Draw()
         draw_text(renderer, "Tilbake", 70, 705, 6, blackText);
     }
 
-    if (stage == 0)
-    {   
-        SDL_FRect spillRect = {400, 200, 300, 80};
-        SDL_RenderFillRect(renderer, &spillRect);
-        draw_text(renderer, "Spill", 450, 205, 6, blackText);
-
-        SDL_FRect infoRect = {400, 400, 300, 80};
-        SDL_RenderFillRect(renderer, &infoRect);
-        draw_text(renderer, "Info", 450, 405, 6, blackText);
-
-        SDL_FRect sluttRect = {400, 600, 300, 80};
-        SDL_RenderFillRect(renderer, &sluttRect);
-        draw_text(renderer, "Slutt", 450, 605, 6, blackText);
-    }
-
-    if (stage == 1)
+    if (stage == 2)
     {
         for (int i = 0; i < numBullets; i++)
         {
@@ -387,7 +382,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (stage == 0)
     {
-
         if (buttonDown == 0)
         {
             float x, y;
@@ -395,17 +389,17 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
             if (x >= 400.0f && x <= 700.0f)
             {
-                if (y >= 200.0f && y <= 280.0f)
-                {
-                    stage = 1;
-                }
-
-                if (y >= 400.0f && y <= 480.0f)
+                if (y >= 250.0f && y <= 330.0f)
                 {
                     stage = 2;
                 }
 
-                if (y >= 600.0f && y <= 680.0f)
+                if (y >= 450.0f && y <= 530.0f)
+                {
+                    stage = 1;
+                }
+
+                if (y >= 650.0f && y <= 730.0f)
                 {
                     return SDL_APP_SUCCESS;
                 }
@@ -413,7 +407,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         }
     }
 
-    if (stage == 2)
+    if (stage == 1)
     {
         if (buttonDown == 0)
         {
@@ -427,7 +421,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         }
     }
 
-    if (stage == 1)
+    if (stage == 2)
     {
 
         keyboard_state = SDL_GetKeyboardState(NULL);
