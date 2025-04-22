@@ -1,8 +1,10 @@
 #include <SDL3/SDL.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
 #include "font.h"
+#include "defines.h"
 
 typedef struct
 {
@@ -227,5 +229,59 @@ void draw_text(SDL_Renderer *renderer, const char *text, int x, int y, int scale
     for (size_t i = 0; text[i] != '\0'; i++)
     {
         draw_char(renderer, text[i], x + i * GLYPHWIDTH * scale, y, scale, fontTexture);
+    }
+}
+
+void cleanup(void **array, int *size, int elements, int isFloat) {
+    int newSize = 0;
+    int newArraySize = 0;
+
+    if (isFloat == 0) {
+        float *originArray = (float *)*array;
+
+        for (int i = 0; i < *size; i++) {
+            if (originArray[elements * i] < WINDOW_WIDTH + 20 && originArray[elements * i] > -20  && originArray[elements * i + 1] < WINDOW_HEIGHT - 20 && originArray[elements * i + 1] > - 20) {
+                newSize += 1;
+            }
+        }
+        
+        float *newArray = (float *)malloc(sizeof(float) * newSize * elements);
+        
+        for (int i = 0; i < *size; i++) {
+            if (originArray[elements * i] < WINDOW_WIDTH + 20 && originArray[elements * i] > -20 && originArray[elements * i + 1] < WINDOW_HEIGHT - 20 && originArray[elements * i + 1] > - 20) {
+                for (int y = 0; y < elements; y++) {
+                    newArray[newArraySize * elements + y] = originArray[i * elements + y];
+                }
+                newArraySize++;
+            }
+        }
+
+        free(*array);
+        *array = newArray;
+        *size = newSize;
+
+    } else {
+        int *originArray = (int *)*array;
+
+        for (int i = 0; i < *size; i++) {
+            if (originArray[elements * i] < WINDOW_WIDTH + 20 && originArray[elements * i] > -20  && originArray[elements * i + 1] < WINDOW_HEIGHT - 20 && originArray[elements * i + 1] > - 20) {
+                newSize += 1;
+            }
+        }
+        
+        int *newArray = (int *)malloc(sizeof(int) * newSize * elements);
+        
+        for (int i = 0; i < *size; i++) {
+            if (originArray[elements * i] < WINDOW_WIDTH + 20 && originArray[elements * i] > -20 && originArray[elements * i + 1] < WINDOW_HEIGHT - 20 && originArray[elements * i + 1] > - 20) {
+                for (int y = 0; y < elements; y++) {
+                    newArray[newArraySize * elements + y] = originArray[i * elements + y];
+                }
+                newArraySize++;
+            }
+        }
+
+        free(*array);
+        *array = newArray;
+        *size = newSize;
     }
 }

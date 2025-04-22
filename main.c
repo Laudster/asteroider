@@ -511,115 +511,27 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
             numAsteroids += 1;
         }
-
+        
         if (counter == 50)
         {
-            int newNumAliens = 0;
-            int *newAliens = NULL;
-
-            for (int i = 0; i < numAliens; i++)
-            {
-                if (aliens[i * 6] < WINDOW_WIDTH + 20 && aliens[i * 6] > -20)
-                {
-                    newAliens = (int *)realloc(newAliens, sizeof(int) * (newNumAliens + 1) * 6);
-
-                    newAliens[newNumAliens * 6] = aliens[i * 6];
-                    newAliens[newNumAliens * 6 + 1] = aliens[i * 6 + 1];
-                    newAliens[newNumAliens * 6 + 2] = aliens[i * 6 + 2];
-                    newAliens[newNumAliens * 6 + 3] = aliens[i * 6 + 3];
-                    newAliens[newNumAliens * 6 + 4] = aliens[i * 6 + 4];
-                    newAliens[newNumAliens * 6 + 5] = aliens[i * 6 + 5];
-
-                    newNumAliens += 1;
-                }
-            }
-
-            free(aliens);
-
-            aliens = newAliens;
-            numAliens = newNumAliens;
+            cleanup((void **)&aliens, &numAliens, 6, 1);
         }
 
         if (counter == 150)
         {
-
-            int newNumAsteroids = 0;
-            int *newAsteroids = NULL;
-
-            for (int i = 0; i < numAsteroids; i++)
-            {
-                if (asteroids[i * 5] < WINDOW_WIDTH + 20 && asteroids[i * 5] > -20)
-                {
-                    newAsteroids = (int *)realloc(newAsteroids, sizeof(int) * (newNumAsteroids + 1) * 5);
-
-                    newAsteroids[newNumAsteroids * 5] = asteroids[i * 5];
-                    newAsteroids[newNumAsteroids * 5 + 1] = asteroids[i * 5 + 1];
-                    newAsteroids[newNumAsteroids * 5 + 2] = asteroids[i * 5 + 2];
-                    newAsteroids[newNumAsteroids * 5 + 3] = asteroids[i * 5 + 3];
-                    newAsteroids[newNumAsteroids * 5 + 4] = asteroids[i * 5 + 4];
-
-                    newNumAsteroids += 1;
-                }
-            }
-
-            free(asteroids);
-
-            asteroids = newAsteroids;
-            numAsteroids = newNumAsteroids;
+            cleanup((void **)&asteroids, &numAsteroids, 5, 1);
         }
 
         if (counter == 250)
         {
-            int newNumAlienBullets = 0;
-            float *newAlienBullets = NULL;
-
-            for (int i = 0; i < numAlienBullets; i++)
-            {
-                if (alienBullets[i * 4] < WINDOW_WIDTH + 20 && alienBullets[i * 4] > -20)
-                {
-                    newAlienBullets = (float *)realloc(newAlienBullets, sizeof(float) * (newNumAlienBullets + 1) * 4);
-
-                    newAlienBullets[newNumAlienBullets * 4] = alienBullets[i * 4];
-                    newAlienBullets[newNumAlienBullets * 4 + 1] = alienBullets[i * 4 + 1];
-                    newAlienBullets[newNumAlienBullets * 4 + 2] = alienBullets[i * 4 + 2];
-                    newAlienBullets[newNumAlienBullets * 4 + 3] = alienBullets[i * 4 + 3];
-
-                    newNumAlienBullets += 1;
-                }
-            }
-
-            free(alienBullets);
-
-            alienBullets = newAlienBullets;
-            numAlienBullets = newNumAlienBullets;
+            cleanup((void **)&alienBullets, &numAlienBullets, 4, 0);
         }
 
         if (counter == 300)
         {
+            cleanup((void **)&bullets, &numBullets, 4, 0);
+
             counter = 0;
-
-            int newNumBullets = 0;
-            float *newBullets = NULL;
-
-            for (int i = 0; i < numBullets; i++)
-            {
-                if (bullets[i * 4] < WINDOW_WIDTH + 20 && bullets[i * 4] > -20)
-                {
-                    newBullets = (float *)realloc(newBullets, sizeof(float) * (newNumBullets + 1) * 4);
-
-                    newBullets[newNumBullets * 4] = bullets[i * 4];
-                    newBullets[newNumBullets * 4 + 1] = bullets[i * 4 + 1];
-                    newBullets[newNumBullets * 4 + 2] = bullets[i * 4 + 2];
-                    newBullets[newNumBullets * 4 + 3] = bullets[i * 4 + 3];
-
-                    newNumBullets += 1;
-                }
-            }
-
-            free(bullets);
-
-            bullets = newBullets;
-            numBullets = newNumBullets;
         }
 
         if (canShoot > 0)
