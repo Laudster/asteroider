@@ -71,6 +71,8 @@ void drawAsteroid(SDL_Renderer *renderer, int centerX, int centerY, int radius, 
 
 void drawAlienShip(SDL_Renderer *renderer, int x, int y, float size)
 {
+    // Ikke elegent, men det fungerer
+    
     SDL_RenderLine(renderer, x, y, x + (45 * size), y);
 
     SDL_RenderLine(renderer, x + (45 * size), y, x + (63 * size), y - (22 * size));
@@ -115,6 +117,7 @@ float distancePointToLineSegment(int lineX1, int lineY1, int lineX2, int lineY2,
 
 bool checkPlayerCircleCollision(int playerPos[2], float playerDirection1, float playerDirection2, float playerDirection3, int asteroidX, int asteroidY, int radius)
 {
+    // Dette skrev ikke jeg, den skammen går til gemini
     int line1Length = 50;
     int line2Length = 50;
     int line3Length = 25;

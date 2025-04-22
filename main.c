@@ -18,23 +18,23 @@ float direction = 107.0f;
 float direction2 = 67.0f;
 float direction3 = 0.0f;
 
-int accelerating = 0;
+bool accelerating = false; // indikator for å vise flamme
 
 int dead = 0;
 
-static Line deadLines[3];
+static Line deadLines[3]; // for døds animasjon
 
 int score = 0;
 
-int stage = 0;
+int stage = 0; // scene som vises
 
-int buttonDown = 1;
+bool buttonDown = 1; // PollEvent som ellers ville bli brukt fungerer ikke med emcc kompilasjon (rart), derfor gjøres dette
 
 static SDL_Texture *blackText;
-static SDL_Texture *whiteText;
+static SDL_Texture *whiteText; // lite effektivt å laste to fonter av samme type, men (kanskje) mer effektivt enn å legge til sdl_ttf
 
 int numBullets = 0;
-float *bullets;
+float *bullets; // noen arrays i float siden chatgpt mener dette hindrer aliasing
 
 int numAsteroids = 0;
 int *asteroids;
@@ -53,9 +53,9 @@ float delta_time;
 
 const bool *keyboard_state = NULL;
 
-void die()
+void die() // for mange variabler til å flytte til utils
 {
-    dead = 200;
+    dead = 200; // timer for respawn
 
     for (int i = 0; i < 3; i++)
     {
@@ -99,8 +99,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
     {
-        buttonDown = 0;
-    } else buttonDown = 1;
+        buttonDown = true;
+    } else buttonDown = false;
 
     if (event->type == SDL_EVENT_QUIT)
     {
@@ -176,6 +176,15 @@ void Draw()
                     if (asteroids[a * 5 + 4] <= 10)
                     {
                         asteroids[a * 5] = 9999;
+                    } else {
+                        asteroids = (int *)realloc(asteroids, sizeof(int) * (numAsteroids + 1) * 5);
+                        asteroids[numAsteroids * 5] = asteroids[a * 5]  + (asteroids[a * 5 + 2] * -1 * 10);
+                        asteroids[numAsteroids * 5 + 1] = asteroids[a * 5 + 1] + (asteroids[a * 5 + 3] * -1 * 10);
+                        asteroids[numAsteroids * 5 + 2] = asteroids[a * 5 + 2] * -1;
+                        asteroids[numAsteroids * 5 + 3] = asteroids[a * 5 +3] * -1;
+                        asteroids[numAsteroids * 5 + 4] = asteroids[a * 5 + 4];
+            
+                        numAsteroids += 1;
                     }
 
                     score += 30;
@@ -213,6 +222,22 @@ void Draw()
                 if (checkBulletCollision(asteroids[a * 5], asteroids[a * 5 + 1], asteroids[a * 5 + 4], aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] * 4))
                 {
                     aliens[i * 6] = 99999;
+
+                    asteroids[a * 5 + 4] *= 0.6;
+
+                    if (asteroids[a * 5 + 4] <= 10)
+                    {
+                        asteroids[a * 5] = 9999;
+                    } else {
+                        asteroids = (int *)realloc(asteroids, sizeof(int) * (numAsteroids + 1) * 5);
+                        asteroids[numAsteroids * 5] = asteroids[a * 5]  + (asteroids[a * 5 + 2] * -1 * 10);
+                        asteroids[numAsteroids * 5 + 1] = asteroids[a * 5 + 1] + (asteroids[a * 5 + 3] * -1 * 10);
+                        asteroids[numAsteroids * 5 + 2] = asteroids[a * 5 + 2] * -1;
+                        asteroids[numAsteroids * 5 + 3] = asteroids[a * 5 +3] * -1;
+                        asteroids[numAsteroids * 5 + 4] = asteroids[a * 5 + 4];
+            
+                        numAsteroids += 1;
+                    }
                 }
             }
 
@@ -222,8 +247,6 @@ void Draw()
                 {
                     aliens[i * 6] = 99999;
                     bullets[b * 4] = -999;
-
-                    score += 50;
                 }
             }
 
@@ -312,6 +335,15 @@ void Draw()
                     if (asteroids[a * 5 + 4] <= 10)
                     {
                         asteroids[a * 5] = 9999;
+                    } else {
+                        asteroids = (int *)realloc(asteroids, sizeof(int) * (numAsteroids + 1) * 5);
+                        asteroids[numAsteroids * 5] = asteroids[a * 5]  + (asteroids[a * 5 + 2] * -1 * 10);
+                        asteroids[numAsteroids * 5 + 1] = asteroids[a * 5 + 1] + (asteroids[a * 5 + 3] * -1 * 10);
+                        asteroids[numAsteroids * 5 + 2] = asteroids[a * 5 + 2] * -1;
+                        asteroids[numAsteroids * 5 + 3] = asteroids[a * 5 +3] * -1;
+                        asteroids[numAsteroids * 5 + 4] = asteroids[a * 5 + 4];
+            
+                        numAsteroids += 1;
                     }
                 }
             }
@@ -343,7 +375,7 @@ void Draw()
             dead -= 1;
         }
 
-        if (accelerating == 1)
+        if (accelerating == true)
         {
             float flameOffsetX = 3;
             float flameOffsetY = 53;
@@ -382,7 +414,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (stage == 0)
     {
-        if (buttonDown == 0)
+        if (buttonDown == true)
         {
             float x, y;
             SDL_GetMouseState(&x, &y);
@@ -409,7 +441,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     if (stage == 1)
     {
-        if (buttonDown == 0)
+        if (buttonDown == true)
         {
             float x, y;
             SDL_GetMouseState(&x, &y);
@@ -537,7 +569,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         if (canShoot > 0)
             canShoot -= 1;
 
-        accelerating = 0;
+        accelerating = false;
 
         if (keyboard_state[SDL_SCANCODE_W] && dead == 0 || keyboard_state[SDL_SCANCODE_UP] && dead == 0)
         {
@@ -546,7 +578,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             moveDir[0] += (SPEED * characterDirection[0] * 0.04);
             moveDir[1] += (SPEED * characterDirection[1] * 0.04);
 
-            accelerating = 1;
+            accelerating = true;
         }
 
         if (keyboard_state[SDL_SCANCODE_D] && dead == 0 || keyboard_state[SDL_SCANCODE_RIGHT] && dead == 0)
