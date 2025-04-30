@@ -22,6 +22,8 @@ bool accelerating = false; // indikator for å vise flamme
 
 int dead = 0;
 
+int grace = 0;
+
 static Line deadLines[3]; // for døds animasjon
 
 int score = 0;
@@ -202,8 +204,24 @@ void Draw()
             asteroids[i * 5] += asteroids[i * 5 + 2] * delta_time * 50;
             asteroids[i * 5 + 1] += asteroids[i * 5 + 3] * delta_time * 50;
 
-            if (checkPlayerCircleCollision(pos, direction, direction2, direction3, asteroids[i * 5], asteroids[i * 5 + 1], asteroids[i * 5 + 4]) && dead == 0)
+            if (checkPlayerCircleCollision(pos, direction, direction2, direction3, asteroids[i * 5], asteroids[i * 5 + 1], asteroids[i * 5 + 4]) && dead == 0 && grace <= 0)
             {
+                asteroids[i * 5 + 4] *= 0.6;
+
+                if (asteroids[i * 5 + 4] <= 10)
+                {
+                    asteroids[i * 5] = 9999;
+                } else {
+                    asteroids = (int *)realloc(asteroids, sizeof(int) * (numAsteroids + 1) * 5);
+                    asteroids[numAsteroids * 5] = asteroids[i * 5]  + (asteroids[i * 5 + 2] * -1 * 10);
+                    asteroids[numAsteroids * 5 + 1] = asteroids[i * 5 + 1] + (asteroids[i * 5 + 3] * -1 * 10);
+                    asteroids[numAsteroids * 5 + 2] = asteroids[i * 5 + 2] * -1;
+                    asteroids[numAsteroids * 5 + 3] = asteroids[i * 5 +3] * -1;
+                    asteroids[numAsteroids * 5 + 4] = asteroids[i * 5 + 4];
+        
+                    numAsteroids += 1;
+                }
+
                 die();
             }
         }
@@ -212,7 +230,7 @@ void Draw()
         {
             drawAlienShip(renderer, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] / 10);
 
-            if (checkPlayerCircleCollision(pos, direction, direction2, direction3, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] * 4) && dead == 0)
+            if (checkPlayerCircleCollision(pos, direction, direction2, direction3, aliens[i * 6], aliens[i * 6 + 1], (float)aliens[i * 6 + 3] * 4) && dead == 0 && grace <= 0)
             {
                 die();
             }
@@ -318,7 +336,7 @@ void Draw()
             SDL_FRect alienBullet = {alienBullets[i * 4], alienBullets[i * 4 + 1], 5, 5};
             SDL_RenderRect(renderer, &alienBullet);
 
-            if (checkPlayerCircleCollision(pos, direction, direction2, direction3, alienBullets[i * 4], alienBullets[i * 4 + 1], 5) && dead == 0)
+            if (checkPlayerCircleCollision(pos, direction, direction2, direction3, alienBullets[i * 4], alienBullets[i * 4 + 1], 5) && dead == 0 && grace <= 0)
             {
                 die();
                 alienBullets[i * 4] = 2300;
@@ -356,14 +374,19 @@ void Draw()
         float rotatedOffset3X = -11 * cosf(radius3) - 35 * sinf(radius3);
         float rotatedOffset3Y = -11 * sinf(radius3) + 35 * cosf(radius3);
 
+        grace -= 1;
+
         if (dead == 0)
         {
-            renderLine(renderer, pos[0], pos[1], 50, direction);
-            renderLine(renderer, pos[0], pos[1], 50, direction2);
-            renderLine(renderer, pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
+            if (grace % 3 == 0 || grace <= 0) {
+                renderLine(renderer, pos[0], pos[1], 50, direction);
+                renderLine(renderer, pos[0], pos[1], 50, direction2);
+                renderLine(renderer, pos[0] + rotatedOffset3X, pos[1] + rotatedOffset3Y, 25, direction3);
+            }
         }
         else
         {
+            grace = 100;
             for (int i = 0; i < 3; i++)
             {
                 renderLine(renderer, deadLines[i].x, deadLines[i].y, 30, deadLines[i].angle);
@@ -374,6 +397,7 @@ void Draw()
 
             dead -= 1;
         }
+
 
         if (accelerating == true)
         {
